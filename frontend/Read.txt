@@ -1,0 +1,2 @@
+app 폴더 안에 있는 page.tsx가 User page, admin 안에 들어있는 page.tsx가 관리자 page 코드야.
+layout.tsx랑 ReservationContexts.tsx는 로컬에서 두 개 연동되는지 확인하려고 만든거고 핵심은 page.tsx 파일들이야.
