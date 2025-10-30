@@ -1,10 +1,10 @@
-/*
+
 -- 기존 DB 제거 후 새로 생성
 DROP DATABASE IF EXISTS inha_reserv;
 CREATE DATABASE inha_reserv
     DEFAULT CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
-*/ 
+
 
 USE inha_reserv;
 -- Roles
