@@ -1,0 +1,149 @@
+# -------------------------
+# Global / OS / Editor
+# -------------------------
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+*.orig
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# -------------------------
+# Python / FastAPI backend
+# -------------------------
+# Virtual environments
+.venv/
+venv/
+env/
+myapi/
+/home/tkddus21/venvs/
+
+# Dependency and build outputs
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environment / secrets
+.env
+.env.*
+.envrc
+backend/.env
+backend/.env.local
+
+# ⚠️ 데이터베이스 연결 정보 (비밀번호 포함 시 제외)
+# backend/database.py  # 임시로 주석 처리 (나중에 환경변수로 분리)
+
+# SQLite or local DB files
+*.db
+*.sqlite3
+
+# SQL 백업 파일
+sql/backup/
+sql/dumps/
+*.sql.gz
+*.sql.bak
+
+# Cache and compiled files
+*.spec
+
+# -------------------------
+# Node / React / Next.js frontend
+# -------------------------
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/.cache/
+
+# Next.js 환경 변수
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+frontend/.env.test.local
+
+# npm/yarn logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# lock files (optional - 협업 시에는 주석 해제 권장)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# -------------------------
+# Temporary or deployment
+# -------------------------
+logs/
+tmp/
+cache/
+uploads/
+*.pid
+*.seed
+*.cover
+*.zip
+*.tar
+*.gz
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.env.docker
+
+# -------------------------
+# Misc project-specific
+# -------------------------
+# VSCode workspace history
+.history/
+
+# Jupyter (just in case)
+.ipynb_checkpoints/
+
+# Backup folders
+backup/
+
+# Test data / sample outputs
+samples/
+test_output/
+
+# -------------------------
+# 추가: 프로젝트 특화
+# -------------------------
+# 엑셀 다운로드 임시 파일
+*.xlsx
+*.xls
+!sql/sample_data.xlsx  # 샘플 데이터는 유지
+
+# 로그 파일
+backend/*.log
+frontend/*.log
+
+# 테스트 커버리지
+.coverage.*
+coverage/
+
+# macOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
