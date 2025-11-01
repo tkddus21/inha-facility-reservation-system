@@ -370,16 +370,30 @@ export default function InhaPortal() {
             <table className="w-full">
               <thead>
                 <tr className="bg-blue-600 text-white">
-                <th className="px-4 py-3 text-sm font-medium">신청일</th> <th className="px-4 py-3 text-sm font-medium">연번</th> <th className="px-4 py-3 text-sm font-medium">사용단체</th> <th className="px-4 py-3 text-sm font-medium">행사명</th> <th className="px-4 py-3 text-sm font-medium">행사장소</th> <th className="px-4 py-3 text-sm font-medium">사작일</th> <th className="px-4 py-3 text-sm font-medium">시작시간</th> <th className="px-4 py-3 text-sm font-medium">종료시간</th> <th className="px-4 py-3 text-sm font-medium">상태</th>
+                  <th className="px-4 py-3 text-sm font-medium">신청일</th>
+                  <th className="px-4 py-3 text-sm font-medium">연번</th>
+                  <th className="px-4 py-3 text-sm font-medium">사용단체</th>
+                  <th className="px-4 py-3 text-sm font-medium">행사명</th>
+                  <th className="px-4 py-3 text-sm font-medium">행사장소</th>
+                  <th className="px-4 py-3 text-sm font-medium">사작일</th>
+                  <th className="px-4 py-3 text-sm font-medium">시작시간</th>
+                  <th className="px-4 py-3 text-sm font-medium">종료시간</th>
+                  <th className="px-4 py-3 text-sm font-medium">상태</th>
                 </tr>
               </thead>
-              <tbody>
-                {reservations.map((res) => (
-                  <tr key={res.id} onClick={() => handleRowClick(res)} className={`border-b border-gray-200 cursor-pointer ${res.id === selectedReservationId ? 'bg-blue-100' : 'hover:bg-gray-50'}`}>
-                    <td className="px-4 py-3 text-sm text-center">{res.date}</td> <td className="px-4 py-3 text-sm text-center">{res.no}</td> <td className="px-4 py-3 text-sm text-center">{res.facility}</td> <td className="px-4 py-3 text-sm text-center">{res.instructor}</td> <td className="px-4 py-3 text-sm text-center">{res.room}</td> <td className="px-4 py-3 text-sm text-center">{res.eventDate}</td> <td className="px-4 py-3 text-sm text-center">{res.time}</td> <td className="px-4 py-3 text-sm text-center">{res.endTime}</td> <td className="px-4 py-3 text-sm text-center">{res.status}</td>
-                  </tr>
-                ))}
-              </tbody>
+                <tbody>
+                  {reservations.map((res) => (
+                    <tr
+                      key={res.id}
+                      onClick={() => handleRowClick(res)}
+                      className={`border-b border-gray-200 cursor-pointer${
+                        res.id === selectedReservationId ? ' bg-blue-100' : ''
+                      }`}
+                    >
+                      <td className="px-4 py-3 text-sm text-center">{res.date}</td><td className="px-4 py-3 text-sm text-center">{res.no}</td><td className="px-4 py-3 text-sm text-center">{res.facility}</td><td className="px-4 py-3 text-sm text-center">{res.instructor}</td><td className="px-4 py-3 text-sm text-center">{res.room}</td><td className="px-4 py-3 text-sm text-center">{res.eventDate}</td><td className="px-4 py-3 text-sm text-center">{res.time}</td><td className="px-4 py-3 text-sm text-center">{res.endTime}</td><td className="px-4 py-3 text-sm text-center">{res.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
             </table>
           </div>
 

@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 origins = [
     "http://localhost:3000", # Next.js 개발 서버 주소
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
