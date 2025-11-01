@@ -1,6 +1,10 @@
 // contexts/ReservationContext.tsx
 'use client';
 
+// 나중에 apiBase를 .env로 관리할 때 사용 frontend/.env.local 파일 만들어서 사용 가능
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://127.0.0.1:8000';
+const RESV_URL = `${API_BASE}/api/reservations`;
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 // --- 1. 프론트엔드 UI가 사용하는 데이터 구조 (기존과 동일) ---
@@ -100,7 +104,7 @@ const mapBackendToFrontend = (be: BackendReservation, index: number): Reservatio
     status1: be.approval_1 === 'approved' ? '확인' : '미확인', // 'approved' -> '확인'
     status2: be.approval_2 === 'approved' ? '확인' : '미확인', // 'approved' -> '확인'
     hvacStatus: feHvacStatus,
-    hvacUsage: be.hvac_mode === 'none' ? '미사용' : '사용',
+    hvacUsage: be.hvac_mode === 'heat' ? '난방' : be.hvac_mode === 'cool' ? '냉방' : '미신청',
     contact: be.user.phone || '연락처 없음',
     emailLocal: emailLocal || '',
     emailDomain: emailDomain || '',
@@ -121,14 +125,57 @@ const mapBackendToFrontend = (be: BackendReservation, index: number): Reservatio
   };
 };
 
-// --- (기존과 동일한 부분) ---
-type NewReservationData = Omit<Reservation, 'id' | 'no'>;
-interface ReservationContextType {
+// FE -> BE 매핑 (생성/수정용)
+type NewReservationData = Omit<Reservation, 'id' | 'no'> & {
+  facilityId: number; // ★ UI에서 시설 선택 시 id도 보관하도록
+};
+
+const toIso = (date: string, hhmm: string) => {
+  // 값이 비었으면 null 리턴
+  if (!date || !hhmm) return null;
+
+  // 안전한 분해
+  const [y, m, d] = date.split('-');
+  const [h, min] = hhmm.split(':');
+  if (!y || !m || !d || !h || !min) {
+    console.warn('Invalid date/time inputs:', date, hhmm);
+    return null;
+  }
+
+  // FastAPI가 naive datetime 받으므로 그대로 문자열 반환
+  return `${y}-${m}-${d}T${h}:${min}:00`;
+};
+
+const hvacMap = (v: string) => (v === '냉방' ? 'cool' : v === '난방' ? 'heat' : 'none');
+const statusMap = (v: string) => (v === '승인' ? 'confirmed' : v === '취소' ? 'cancelled' : 'pending');
+const approveMap = (v: string) => (v === '확인' ? 'approved' : 'pending');
+
+// FE → BE (POST/PUT 바디 만들 때 사용)
+const mapFrontendToBackend = (fe: any) => ({
+  facility_id: fe.facilityId,                // ★ 드롭다운 value로 받아오기
+  group_name: fe.finalOrgName,               // 사용단체
+  event_name: fe.eventTitle,                 // 행사명
+  message: fe.rentalItems ?? null,           // 요청/메모
+  start_time: toIso(fe.reservationDate, fe.startTime),
+  end_time: toIso(fe.reservationDate, fe.endTime),
+  hvac_mode: hvacMap(fe.hvacUsage),
+  approval_1: approveMap(fe.status1 || '미확인'),
+  approval_2: approveMap(fe.status2 || '미확인'),
+  status: statusMap(fe.status || '신청중'),
+  // user_id는 백엔드에서 토큰으로 추출하거나 임시 사용자 1로 처리
+});
+
+export interface ReservationContextType {
   reservations: Reservation[];
-  addReservation: (newReservation: NewReservationData) => void;
-  cancelReservation: (reservationId: number) => void;
-  updateReservation: (updatedReservation: Reservation) => void;
+  addReservation: (form: NewReservationData) => Promise<void>;
+  updateReservation: (id: number, form: NewReservationData) => Promise<void>;
+  cancelReservation: (id: number) => Promise<void>;
+  batchCancel: (ids: number[]) => Promise<void>;
+  batchApprove1: (ids: number[]) => Promise<void>;
+  batchApprove2: (ids: number[]) => Promise<void>;
+  exportExcel: () => Promise<void>;
 }
+
 const ReservationContext = createContext<ReservationContextType | undefined>(undefined);
 interface ReservationProviderProps {
   children: ReactNode;
@@ -146,8 +193,7 @@ export function ReservationProvider({ children }: ReservationProviderProps) {
 
   // --- 5. (교체됨) localStorage -> API (GET) ---
   // 컴포넌트 마운트 시 *단 1회* API에서 데이터를 가져옴
-  useEffect(() => {
-    const fetchReservations = async () => {
+  const fetchReservations = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(API_URL);
@@ -168,65 +214,59 @@ export function ReservationProvider({ children }: ReservationProviderProps) {
       } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchReservations();
-  }, []); // 빈 배열: 마운트 시 1회만 실행
+  };
+  useEffect(() => { fetchReservations(); }, []);
 
   // --- 6. (교체 필요) CRUD 함수들 ---
   // (TODO: 이 함수들을 API (POST, PUT, DELETE) 호출로 변경해야 함)
   // (일단은 로컬에서만 작동하도록 둠)
 
-  const addReservation = (newReservation: NewReservationData) => {
-    // (TODO: POST /api/reservations 호출)
-    console.log("TODO: API로 예약 생성", newReservation);
-    // (임시 로컬 업데이트)
-    setReservations(prev => {
-      const newId = Date.now();
-      const newNo = prev.length > 0 ? Math.max(...prev.map(r => r.no)) + 1 : 1;
-      const reservationWithId: Reservation = {
-          ...newReservation,
-          id: newId,
-          no: newNo
-      };
-      return [reservationWithId, ...prev];
-    });
+// 생성
+// POST
+const addReservation = async (form: NewReservationData) => {
+  const body = mapFrontendToBackend({ ...form, status: '신청중', status1: '미확인', status2: '미확인' });
+  const r = await fetch(RESV_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('예약 생성 실패');
+  const be: BackendReservation = await r.json();
+  const fe = mapBackendToFrontend(be, 0);
+  setReservations(prev => [{ ...fe, no: (prev[0]?.no ?? 0) + 1 }, ...prev]);
+  };
+  // 수정
+  // PUT
+  const updateReservation = async (id: number, form: NewReservationData) => {
+    const r = await fetch(`${RESV_URL}/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(mapFrontendToBackend(form)) });
+    if (!r.ok) throw new Error('예약 수정 실패');
+    const be: BackendReservation = await r.json();
+    const fe = mapBackendToFrontend(be, 0);
+    setReservations(prev => prev.map(x => (x.id === fe.id ? { ...fe, no: x.no } : x)));
+  };
+  // 삭제(취소)
+  const cancelReservation = async (id: number) => {
+    const r = await fetch(`${RESV_URL}/${id}`, { method:'DELETE' });
+    if (!r.ok) throw new Error('예약 취소 실패');
+    setReservations(prev => prev.filter(x => x.id !== id));
   };
 
-  const cancelReservation = (reservationId: number) => {
-    // (TODO: DELETE /api/reservations/{id} 호출)
-    console.log("TODO: API로 예약 삭제", reservationId);
-    // (임시 로컬 업데이트)
-    setReservations(prev => prev.filter(res => res.id !== reservationId));
-  };
+  const postIds = (path: string, ids: number[]) =>
+  fetch(`${RESV_URL}/${path}`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ reservation_ids: ids }),
+  });
 
-  const updateReservation = (updatedReservation: Reservation) => {
-    // (TODO: PUT /api/reservations/{id} 호출)
-    console.log("TODO: API로 예약 수정", updatedReservation);
-    // (임시 로컬 업데이트, 기존 로직 유지)
-    setReservations(prev => 
-      prev.map(res => {
-        if (res.id !== updatedReservation.id) {
-          return res;
-        }
-        // ... (기존의 '승인' 상태 변경 로직) ...
-        const newReservationData = { ...updatedReservation };
-        if (newReservationData.status !== '취소') {
-            const isHvacConfirmed = 
-                newReservationData.hvacUsage === '미사용' || 
-                (newReservationData.hvacUsage !== '미사용' && newReservationData.hvacStatus === '확인');
-            if (newReservationData.status1 === '확인' && 
-                newReservationData.status2 === '확인' && 
-                isHvacConfirmed) 
-            {
-                newReservationData.status = '승인';
-            }
-        }
-        return newReservationData;
-      })
-    );
-  };
+  const batchCancel   = async (ids: number[]) => { const r = await postIds('batch-cancel', ids);   if (!r.ok) throw new Error('일괄 취소 실패'); await fetchReservations(); };
+  const batchApprove1 = async (ids: number[]) => { const r = await postIds('batch-approve-1', ids); if (!r.ok) throw new Error('1차 승인 실패'); await fetchReservations(); };
+  const batchApprove2 = async (ids: number[]) => { const r = await postIds('batch-approve-2', ids); if (!r.ok) throw new Error('2차 승인 실패'); await fetchReservations(); };
   
+  const exportExcel = async () => {
+    const r = await fetch(`${RESV_URL}/export`);
+    if (!r.ok) throw new Error('엑셀 실패');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `reservations_${new Date().toISOString().slice(0,10)}.xlsx`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
   // --- 7. (로딩 처리) ---
   if (isLoading) {
     return <div>데이터를 불러오는 중입니다...</div>;
@@ -237,6 +277,10 @@ export function ReservationProvider({ children }: ReservationProviderProps) {
     addReservation,
     cancelReservation,
     updateReservation,
+    batchCancel,
+    batchApprove1,
+    batchApprove2,
+    exportExcel,
   };
 
   return (
