@@ -5,8 +5,8 @@ import { Calendar } from 'lucide-react';
 import { useReservations, Reservation } from '@/contexts/ReservationContext';
 
 export default function AdminPage() {
-  const { reservations, updateReservation } = useReservations();
-
+  const { reservations, updateReservation, batchApprove1, batchCancel } = useReservations();
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   // 상단 필터 상태
   const [searchStartDate, setSearchStartDate] = useState('2025-10-01');
   const [searchEndDate, setSearchEndDate] = useState('2025-11-30');
@@ -104,6 +104,21 @@ export default function AdminPage() {
           <div className="flex-1 overflow-y-auto">
             <table className="w-full text-xs text-left table-auto">
               <thead className="sticky top-0 bg-gray-100">
+                <tr>
+                  {/* [이 <th> 블록을 새로 추가하세요] */}
+                  <th className="p-2 border-b w-10 text-center">
+                    <input
+                      type="checkbox"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          // 전체 선택
+                          setSelectedIds(filteredReservations.map(r => r.id));
+                        } else {
+                          // 전체 선택 해제
+                          setSelectedIds([]);
+                        }
+                      }}
+                    />
                 <tr>
                   <th className="p-2 border-b">신청일자</th>
                   <th className="p-2 border-b">사용단체</th>

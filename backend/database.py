@@ -6,8 +6,8 @@ import os
 # --- (중요) MySQL 연결 설정 ---
 # DDL.sql 파일은 MySQL 기준이므로, MySQL에 연결합니다.
 
-MYSQL_USER = "master" # 1. 본인의 MySQL 사용자 이름 (보통 root)
-MYSQL_PASSWORD = "1234" # 2. ⚠⚠⚠ 이 부분을 본인의 MySQL 비밀번호로 변경하세요! ⚠⚠⚠
+MYSQL_USER = "root" # 1. 본인의 MySQL 사용자 이름 (보통 root)
+MYSQL_PASSWORD = "8475" # 2. ⚠⚠⚠ 이 부분을 본인의 MySQL 비밀번호로 변경하세요! ⚠⚠⚠
 MYSQL_HOST = "127.0.0.1" # 로컬 호스트
 MYSQL_DB = "inha_reserv" # Workbench에서 만든 DB 이름
 

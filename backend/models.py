@@ -117,16 +117,36 @@ class Reservation(Base):
     user_id = Column(INT, ForeignKey("Users.user_id"), nullable=False)
     facility_id = Column(INT, ForeignKey("Facilities.facility_id"), nullable=False)
     
-    group_name = Column(String(100))
+    # --- [수정됨] 3. 사용단체 분류 컬럼 추가 ---
+    org_cat1 = Column(String(100), nullable=True)
+    org_cat2 = Column(String(100), nullable=True)
+    
+    group_name = Column(String(100)) # (이건 '세부 단체명'으로 사용)
     event_name = Column(String(255))
+
+    # --- [수정됨] 2. 행사인원 컬럼 추가 ---
+    event_headcount = Column(INT, nullable=True, default=0)
+
     message = Column(Text)
     
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     
     hvac_mode = Column(Enum('none', 'heat', 'cool'), default='none')
+
+    # --- [수정됨] 1. 확인부서 컬럼 추가 ---
+    hvac_dept = Column(String(100), nullable=True)
+
     approval_1 = Column(Enum('pending', 'approved', 'rejected'), default='pending')
+    
+    # --- [수정됨] 1. 확인부서 컬럼 추가 ---
+    approval_1_dept = Column(String(100), nullable=True)
+    
     approval_2 = Column(Enum('pending', 'approved', 'rejected'), default='pending')
+    
+    # --- [수정됨] 1. 확인부서 컬럼 추가 ---
+    approval_2_dept = Column(String(100), nullable=True)
+
     status = Column(Enum('pending', 'confirmed', 'cancelled'), default='pending')
     
     created_at = Column(TIMESTAMP, server_default=func.now())

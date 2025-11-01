@@ -56,8 +56,12 @@ def get_reservations(
     
     # 기본 쿼리: Reservation 테이블과 User, Facility를 JOIN
     query = db.query(models.Reservation).options(
-        joinedload(models.Reservation.user),
-        joinedload(models.Reservation.facility)
+    # User와 Department JOIN
+    joinedload(models.Reservation.user).joinedload(models.User.department),
+    # Facility와 Category1, Category2를 3단 JOIN
+    joinedload(models.Reservation.facility)
+        .joinedload(models.Facility.category2)
+        .joinedload(models.FacilityCategory2.category1)
     )
 
     # 1. 날짜 필터링 (start_time 기준)
@@ -110,8 +114,12 @@ def create_reservation(
     # 5. (중요) JOIN된 데이터를 다시 조회해서 반환
     #    (schemas.Reservation이 user, facility 정보를 요구하기 때문)
     result = db.query(models.Reservation).options(
-        joinedload(models.Reservation.user),
-        joinedload(models.Reservation.facility)
+    # User와 Department JOIN
+    joinedload(models.Reservation.user).joinedload(models.User.department),
+    # Facility와 Category1, Category2를 3단 JOIN
+    joinedload(models.Reservation.facility)
+        .joinedload(models.Facility.category2)
+        .joinedload(models.FacilityCategory2.category1)
     ).filter(models.Reservation.reservation_id == db_reservation.reservation_id).first()
 
     return result
@@ -161,9 +169,14 @@ def update_reservation(
     db.refresh(db_reservation)
     
     # 5. JOIN된 데이터를 다시 조회해서 반환
+    # (update_reservation 함수 맨 아래)
     result = db.query(models.Reservation).options(
-        joinedload(models.Reservation.user),
-        joinedload(models.Reservation.facility)
+    # User와 Department JOIN
+    joinedload(models.Reservation.user).joinedload(models.User.department),
+    # Facility와 Category1, Category2를 3단 JOIN
+    joinedload(models.Reservation.facility)
+        .joinedload(models.Facility.category2)
+        .joinedload(models.FacilityCategory2.category1)
     ).filter(models.Reservation.reservation_id == db_reservation.reservation_id).first()
 
     return result
